@@ -426,7 +426,7 @@ menus = {
 ],
 
     "Hub Manager": [
-        "Hub Dashboard", "Undo Last Action". "Inventory", "Update Stock", "Bulk Update", "Messages", "Count", "Incoming Shipments", "Google Sheets"
+        "Hub Dashboard", "Undo Last Action", "Inventory", "Update Stock", "Bulk Update", "Messages", "Count", "Incoming Shipments", "Google Sheets"
     ],
     "Retail": [
         "Inventory", "Undo Last Action", "Update Stock", "Bulk Update", "Messages", "Count", "Google Sheets"
