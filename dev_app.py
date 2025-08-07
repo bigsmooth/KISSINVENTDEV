@@ -410,7 +410,7 @@ if role == "Hub Manager" and st.experimental_get_query_params().get("dashboard")
     
     st.markdown("---")
     if st.button("✅ Continue to Menu", key="go_to_menu"):
-        st.experimental_set_query_params(dashboard=None)
+        st.query_params.clear()
         st.rerun()
     st.stop()
 
