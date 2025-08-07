@@ -411,7 +411,7 @@ if role == "Hub Manager" and st.experimental_get_query_params().get("dashboard")
     st.markdown("---")
     if st.button("✅ Continue to Menu", key="go_to_menu"):
         st.experimental_set_query_params(dashboard=None)
-        st.experimental_rerun()
+        st.rerun()
     st.stop()
 
 
@@ -473,7 +473,7 @@ if menu == "Recycle Bin" and role == "Admin":
                 if st.button(f"♻️ Restore {user[0]}", key=f"restore_user_{user[0]}"):
                     query("UPDATE users SET deleted=0 WHERE username=?", (user[0],))
                     st.success(f"✅ Restored user {user[0]}")
-                    st.experimental_rerun()
+                    st.rerun()
         else:
             st.info("✅ No deleted users.")
 
@@ -485,7 +485,7 @@ if menu == "Recycle Bin" and role == "Admin":
                 if st.button(f"♻️ Restore {sku[0]}", key=f"restore_sku_{sku[0]}"):
                     query("UPDATE sku_info SET deleted=0 WHERE sku=?", (sku[0],))
                     st.success(f"✅ Restored SKU {sku[0]}")
-                    st.experimental_rerun()
+                    st.rerun()
         else:
             st.info("✅ No deleted SKUs.")
 
