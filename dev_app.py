@@ -410,9 +410,8 @@ if role == "Hub Manager" and st.experimental_get_query_params().get("dashboard")
     
     st.markdown("---")
     if st.button("✅ Continue to Menu", key="go_to_menu"):
-        st.query_params.clear()
-        st.rerun()
-    st.stop()
+    st.query_params.update({"dashboard": None})
+    st.rerun()
 
 
 # --- Define ALL menus and logic exactly as in your latest working code, using unique keys for every Streamlit element. ---
