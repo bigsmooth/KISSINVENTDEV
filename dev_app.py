@@ -431,7 +431,7 @@ menus = {
     "Retail": [
         "Inventory", "Undo Last Action", "Update Stock", "Bulk Update", "Messages", "Count", "Google Sheets"
     ],
-    "Supplier": ["Supplier": "Supplier Dashboard", "Shipments", "Create SKU"]
+    "Supplier": ["Supplier Dashboard", "Shipments", "Create SKU"]
 
     
 }
