@@ -419,7 +419,7 @@ if role == "Hub Manager" and st.experimental_get_query_params().get("dashboard")
 
 menus = {
     "Admin": [
-    "📊 Admin Dashboard",  # Add this
+    "Admin Dashboard",  # Add this
     "Undo Last Action", "Inventory", "Logs", "Shipments", "Messages", "Count", "Assign SKUs",
     "Create SKU", "Upload SKUs", "User Access", "Create User", "Recycle Bin",
     "Backup", "Restore", "Google Sheets"
@@ -431,7 +431,7 @@ menus = {
     "Retail": [
         "Inventory", "Undo Last Action", "Update Stock", "Bulk Update", "Messages", "Count", "Google Sheets"
     ],
-    "Supplier": ["Supplier": "📊 Supplier Dashboard", "Shipments", "Create SKU"]
+    "Supplier": ["Supplier": "Supplier Dashboard", "Shipments", "Create SKU"]
 
     
 }
