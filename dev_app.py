@@ -362,7 +362,7 @@ if st.sidebar.button("🚪 Logout", key=f"logout_btn_{username}"):
 if role == "Hub Manager" and "hub_dashboard_seen" not in st.session_state:
     st.session_state["hub_dashboard_seen"] = True
     st.experimental_set_query_params(dashboard="true")
-    st.experimental_rerun()
+    st.rerun()
 
 if role == "Hub Manager" and st.experimental_get_query_params().get("dashboard") == ["true"]:
     st.title(f"📊 {hub} Dashboard")
