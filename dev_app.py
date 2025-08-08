@@ -222,10 +222,7 @@ def restore_db(snapshot_path: Path) -> None:
     if snapshot_path and snapshot_path.exists():
         shutil.copy2(snapshot_path, DB)
 
-if not Path(DB).exists():
-    setup_db()
-else:
-    setup_db()  # ensures missing tables are created
+
 
 # =========================
 # SECTION 2 — Database Setup & Seeding
@@ -391,6 +388,14 @@ def ensure_db_ready():
 
 # Run DB setup immediately
 ensure_db_ready()
+
+# =========================
+# SECTION 2.5 — Initialize DB (call AFTER setup_db is defined)
+# =========================
+if "db_init" not in st.session_state:
+    setup_db()              # creates tables; seeds only if empty
+    st.session_state["db_init"] = True
+
 
 # =========================
 # SECTION 3 — Login & Role Setup
