@@ -9,7 +9,6 @@ import io
 import shutil
 from datetime import datetime
 from pathlib import Path
-import shutil
 
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
@@ -301,11 +300,6 @@ def seed_users():
         query("INSERT OR IGNORE INTO users (username, password, role, hub) VALUES (?, ?, ?, ?)", u, fetch=False)
 
 
-def seed_all_skus():
-    # keep your existing SKU seeding function body here (unchanged)
-    pass  # <- replace with your real seeding code
-
-
 def setup_db():
     create_tables()
     # only seed when empty
@@ -401,21 +395,6 @@ if "db_init" not in st.session_state:
 # SECTION 3 — Login & Role Setup
 # =========================
 
-# --- Small helpers used by multiple sections ---
-def get_all_hubs():
-    rows = query("SELECT DISTINCT hub FROM inventory")
-    hubs = sorted({r[0] for r in rows if r[0]})
-    for extra in ["Hub 1", "Hub 2", "Hub 3", "Retail", "HQ"]:
-        if extra not in hubs:
-            hubs.append(extra)
-    return hubs
-
-def is_sku_assigned_to_hub(sku: str, hub: str) -> bool:
-    row = query("SELECT assigned_hubs FROM sku_info WHERE sku=?", (sku,))
-    if not row or not row[0][0]:
-        return False
-    assigned = [h.strip() for h in row[0][0].split(",") if h.strip()]
-    return hub in assigned
 
 # --- Login panel ---
 def login_panel():
@@ -463,120 +442,27 @@ if st.sidebar.button("🚪 Logout", key=f"logout_btn_{username}"):
 # SECTION 4 — Menus & Inventory
 # =========================
 
-# --- Menus by role ---
-ADMIN_TABS = [
-    "Inventory", "Update Stock", "Logs", "History", "Messages",
-    "Shipments", "Create SKU", "Upload CSV", "Assign SKUs",
-    "Manage Users", "Inventory Count", "Backup"
-]
-HUB_TABS = ["Inventory", "Update Stock", "Logs", "History", "Messages", "Shipments", "Inventory Count"]
-RETAIL_TABS = HUB_TABS
-SUPPLIER_TABS = [T("supplier_shipments")]
-
-TABS_BY_ROLE = {
-    "Admin": ADMIN_TABS,
-    "Hub Manager": HUB_TABS,
-    "Retail": RETAIL_TABS,
-    "Supplier": SUPPLIER_TABS
-}
-
-menu = st.sidebar.radio("📂 Menu", TABS_BY_ROLE.get(role, []), key="menu_radio")
-
-# --- Inventory page ---
-if menu == "Inventory":
-    st.header("📦 Inventory")
-
-    # Which hub to view?
-    if role == "Admin":
-        hub_to_view = st.selectbox("Select Hub", sorted(get_all_hubs()), key="inv_hub_select")
-    else:
-        hub_to_view = hub
-        st.info(f"Viewing inventory for **{hub_to_view}**")
-
-    # Optional search
-    search = st.text_input("🔎 Search SKU or Product name (optional)", key="inv_search").strip().lower()
-
-    # Load base data
-    sku_name_pairs = query("SELECT sku, product_name FROM sku_info")
-    name_map = {s: (n or "") for s, n in sku_name_pairs}
-
-    inv_rows = query("SELECT sku, quantity FROM inventory WHERE hub = ?", (hub_to_view,))
-    records = []
-    for s, q in inv_rows:
-        pname = name_map.get(s, "")
-        if search and (search not in s.lower() and search not in pname.lower()):
-            continue
-        status = "🟥 Low" if (q or 0) < 10 else "✅ OK"
-        records.append((s, pname, q, status))
-
-    df = pd.DataFrame(records, columns=["SKU", "Product Name", "Qty", "Status"]).sort_values("SKU")
-    if df.empty:
-        st.warning("No inventory records match your filters.")
-    else:
-        st.dataframe(df, use_container_width=True, key="inventory_df")
-
-        # Export
-        csv_buf = io.StringIO()
-        df.to_csv(csv_buf, index=False)
-        st.download_button(
-            "📥 Export Inventory CSV",
-            csv_buf.getvalue(),
-            file_name=f"inventory_{hub_to_view}.csv",
-            mime="text/csv",
-            key="inventory_export_btn"
-        )
-
 # --- Sidebar Menu ---
 tabs_by_role = {
     "Admin": [
-        "Inventory", "Update Stock", "Logs", "History", "Messages",
+        "Inventory", "Update Stock", "Bulk Update", "Logs", "Messages",
         "Shipments", "Create SKU", "Upload CSV", "Assign SKUs",
         "Manage Users", "Inventory Count", "Backup"
     ],
     "Hub Manager": [
-        "Inventory", "Update Stock", "Logs", "History", "Messages",
+        "Inventory", "Update Stock", "Bulk Update", "Logs", "Messages",
         "Shipments", "Inventory Count"
     ],
     "Retail": [
-        "Inventory", "Update Stock", "Logs", "History", "Messages",
+        "Inventory", "Update Stock", "Bulk Update", "Logs", "Messages",
         "Shipments", "Inventory Count"
     ],
-    "Supplier": [T("supplier_shipments")]
+    "Supplier": ["Shipments"]
+
 }
 
 menu = st.sidebar.radio("📂 Menu", tabs_by_role.get(role, []), key="main_menu")
 
-# --- Inventory Tab ---
-if menu == "Inventory":
-    st.header("📦 Inventory")
-
-    # Hub selection for Admin only
-    hub_to_view = hub if role != "Admin" else st.selectbox(
-        "Select Hub", sorted(get_all_hubs()), key="inv_hub"
-    )
-
-    search = st.text_input("Search SKU or Product", key="inv_search")
-
-    all_skus = query("SELECT sku, product_name FROM sku_info")
-    sku_filter = [
-        sku for sku, name in all_skus
-        if search.lower() in sku.lower() or search.lower() in name.lower()
-    ] if search else None
-
-    inventory_data = query(
-        "SELECT sku, quantity FROM inventory WHERE hub = ?", (hub_to_view,)
-    )
-    sku_map = dict(all_skus)
-
-    filtered = [
-        (sku, qty, sku_map.get(sku, ""))
-        for sku, qty in inventory_data
-        if not sku_filter or sku in sku_filter
-    ]
-
-    df = pd.DataFrame(filtered, columns=["SKU", "Quantity", "Product Name"])\
-             .sort_values(by="SKU")
-    st.dataframe(df, use_container_width=True)
 
 # --- Update Stock Tab ---
 if menu == "Update Stock":
