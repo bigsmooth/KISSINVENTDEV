@@ -9,6 +9,8 @@ import io
 import shutil
 from datetime import datetime
 from pathlib import Path
+import shutil
+
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
@@ -230,20 +232,19 @@ else:
 # =========================
 
 # --- Create tables (safe, no wipe) ---
+# --- DB Setup & Seeding ---
 def create_tables():
     query("""CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
         password TEXT,
         role TEXT,
-        hub TEXT
-    )""", fetch=False)
+        hub TEXT)""")
 
     query("""CREATE TABLE IF NOT EXISTS inventory (
         sku TEXT,
         hub TEXT,
         quantity INTEGER,
-        PRIMARY KEY (sku, hub)
-    )""", fetch=False)
+        PRIMARY KEY (sku, hub))""")
 
     query("""CREATE TABLE IF NOT EXISTS logs (
         timestamp TEXT,
@@ -252,14 +253,12 @@ def create_tables():
         hub TEXT,
         action TEXT,
         qty INTEGER,
-        comment TEXT
-    )""", fetch=False)
+        comment TEXT)""")
 
     query("""CREATE TABLE IF NOT EXISTS sku_info (
         sku TEXT PRIMARY KEY,
         product_name TEXT,
-        assigned_hubs TEXT
-    )""", fetch=False)
+        assigned_hubs TEXT)""")
 
     query("""CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -269,8 +268,7 @@ def create_tables():
         message TEXT,
         timestamp TEXT,
         thread_id TEXT,
-        reply_to INTEGER
-    )""", fetch=False)
+        reply_to INTEGER)""")
 
     query("""CREATE TABLE IF NOT EXISTS shipments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -279,38 +277,45 @@ def create_tables():
         carrier TEXT,
         hub TEXT,
         date TEXT,
-        status TEXT DEFAULT 'Pending'
-    )""", fetch=False)
+        status TEXT DEFAULT 'Pending')""")
 
     query("""CREATE TABLE IF NOT EXISTS shipment_items (
         shipment_id INTEGER,
         sku TEXT,
-        qty INTEGER
-    )""", fetch=False)
+        qty INTEGER)""")
 
     query("""CREATE TABLE IF NOT EXISTS count_confirmations (
         sku TEXT,
         hub TEXT,
         count INTEGER,
         confirmed_by TEXT,
-        timestamp TEXT
-    )""", fetch=False)
+        timestamp TEXT)""")
 
 
-# --- Minimal User Seeder ---
 def seed_users():
     users = [
         ("kevin", hash_pw("admin123"), "Admin", "HQ"),
-        ("slo", hash_pw("hub1pass"), "Hub Manager", "Hub 1"),
-        ("fox", hash_pw("hub2pass"), "Hub Manager", "Hub 2"),
-        ("carmen", hash_pw("hub3pass"), "Hub Manager", "Hub 3"),
-        ("smooth", hash_pw("retailpass"), "Retail", "Retail Store"),
+        ("slo",   hash_pw("hub1pass"), "Hub Manager", "Hub 1"),
+        ("fox",   hash_pw("hub2pass"), "Hub Manager", "Hub 2"),
+        ("carmen",hash_pw("hub3pass"), "Hub Manager", "Hub 3"),
+        ("smooth",hash_pw("retailpass"), "Retail", "Retail")
     ]
     for u in users:
-        try:
-            query("INSERT INTO users (username, password, role, hub) VALUES (?, ?, ?, ?)", u, fetch=False)
-        except sqlite3.IntegrityError:
-            pass
+        query("INSERT OR IGNORE INTO users (username, password, role, hub) VALUES (?, ?, ?, ?)", u, fetch=False)
+
+
+def seed_all_skus():
+    # keep your existing SKU seeding function body here (unchanged)
+    pass  # <- replace with your real seeding code
+
+
+def setup_db():
+    create_tables()
+    # only seed when empty
+    if not query("SELECT 1 FROM users LIMIT 1"):
+        seed_users()
+    if not query("SELECT 1 FROM sku_info LIMIT 1"):
+        seed_all_skus()
 
 
 # --- SKU Seeder ---
